@@ -49,15 +49,18 @@ resource_policy "aws_cloudfront_distribution" "encrypt_custom_origins" {
       for origin in local.custom_origins : core::try(origin.origin_id, "unknown-origin")
       if core::try(origin.custom_origin_config[0].origin_protocol_policy, "") == "match-viewer" && local.any_behavior_allow_all
     ]
+
+    comment_raw = core::try(attrs.comment, null)
+    comment = local.comment_raw != null ? local.comment_raw : "unnamed-distribution"
   }
 
   enforce {
     condition = core::length(local.invalid_http_only_origins) == 0
-    error_message = "CloudFront distribution '${core::try(attrs.comment, "unnamed-distribution")}' must not allow custom origins with origin_protocol_policy set to 'http-only'. Violating origins: ${core::join(", ", local.invalid_http_only_origins)}"
+    error_message = "CloudFront distribution '${local.comment}' must not allow custom origins with origin_protocol_policy set to 'http-only'. Violating origins: ${core::join(", ", local.invalid_http_only_origins)}"
   }
 
   enforce {
     condition = core::length(local.invalid_match_viewer_origins) == 0
-    error_message = "CloudFront distribution '${core::try(attrs.comment, "unnamed-distribution")}' must not pair a custom origin with origin_protocol_policy 'match-viewer' with any cache behavior (default or ordered) whose viewer_protocol_policy is 'allow-all'. Violating origins: ${core::join(", ", local.invalid_match_viewer_origins)}"
+    error_message = "CloudFront distribution '${local.comment}' must not pair a custom origin with origin_protocol_policy 'match-viewer' with any cache behavior (default or ordered) whose viewer_protocol_policy is 'allow-all'. Violating origins: ${core::join(", ", local.invalid_match_viewer_origins)}"
   }
 }
