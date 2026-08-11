@@ -30,10 +30,10 @@ resource_policy "aws_emr_cluster" "emr_master_no_public_ip" {
 
     candidate_subnets = local.subnet_id != null ? [local.subnet_id] : local.subnet_ids
 
-    all_subnets = core::getresources("aws_subnet", {})
+    emr_all_subnets = core::getresources("aws_subnet", {})
 
     matching_subnets = [
-      for subnet in local.all_subnets :
+      for subnet in local.emr_all_subnets :
       subnet if core::contains(local.candidate_subnets, subnet.id)
     ]
 

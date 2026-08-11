@@ -17,14 +17,14 @@ input "efs-mount-target-public-accessible-enforcement-level" {
 }
 
 locals {
-    all_subnets = core::getresources("aws_subnet", {})
+    efs_all_subnets = core::getresources("aws_subnet", {})
 }
 
 resource_policy "aws_efs_mount_target" "no_public_subnet" {
     enforcement_level = input.efs-mount-target-public-accessible-enforcement-level
     locals {
         subnet = core::try(
-            [for s in local.all_subnets : s if s.id == attrs.subnet_id][0],
+            [for s in local.efs_all_subnets : s if s.id == attrs.subnet_id][0],
             null
         )
         map_public_ip_on_launch = core::try(local.subnet.map_public_ip_on_launch, false)

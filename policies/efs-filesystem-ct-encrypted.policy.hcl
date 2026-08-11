@@ -16,7 +16,7 @@ input "efs-filesystem-ct-encrypted-enforcement-level" {
   default = "advisory"
 }
 
-input "kms_key_arns" {
+input "efs_kms_key_arns" {
     type = string
     default = ""
 }
@@ -27,8 +27,8 @@ resource_policy "aws_efs_file_system" "encryption_at_rest" {
         is_encrypted = core::try(attrs.encrypted, false)
         kms_key_id = core::try(attrs.kms_key_id, "")
 
-        has_input = input.kms_key_arns != ""
-        valid_key = local.has_input ? core::contains(core::split(",", input.kms_key_arns), local.kms_key_id) : true
+        has_efs_input = input.efs_kms_key_arns != ""
+        valid_key = local.has_efs_input ? core::contains(core::split(",", input.efs_kms_key_arns), local.kms_key_id) : true
     }
 
     enforce {

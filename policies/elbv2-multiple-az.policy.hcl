@@ -25,7 +25,7 @@ locals {
     all_listeners = core::getresources("aws_lb_listener", {})
     all_target_group_attachments = core::getresources("aws_lb_target_group_attachment", {})
     all_instances = core::getresources("aws_instance", {})
-    all_subnets = core::getresources("aws_subnet", {})
+    elb_all_subnets = core::getresources("aws_subnet", {})
 }
 
 resource_policy "aws_lb" "multiple_az_required" {
@@ -70,7 +70,7 @@ resource_policy "aws_lb" "multiple_az_required" {
         ]
 
         target_availability_zones = [
-            for subnet in local.all_subnets :
+            for subnet in local.elb_all_subnets :
             core::try(subnet.availability_zone, "") if core::contains(local.target_subnet_ids, core::try(subnet.id, "")) && core::try(subnet.availability_zone, "") != ""
         ]
 
@@ -87,7 +87,7 @@ resource_policy "aws_lb" "multiple_az_required" {
         ]
 
         target_az_details = [
-            for subnet in local.all_subnets :
+            for subnet in local.elb_all_subnets :
             "${subnet.id} (${subnet.availability_zone})" if core::contains(local.target_subnet_ids, core::try(subnet.id, ""))
         ]
 
