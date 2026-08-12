@@ -26,11 +26,11 @@ resource_policy "aws_ecs_task_definition" "ecs20_nonroot_user_linux" {
   locals {
     # container_definitions attribute - access directly as structured data
     # In tfpolicy, this attribute is already parsed from JSON
-    container_defs = core::try(attrs.container_definitions, [])
+    container_defs = core::jsondecode(attrs.container_definitions)
     
     # Check each container for user configuration
     container_checks = [
-      for idx, container in local.container_defs : {
+      for container in local.container_defs : {
         name = container.name
         has_user = core::try(container.user, null) != null
         user_value = core::try(container.user, "")

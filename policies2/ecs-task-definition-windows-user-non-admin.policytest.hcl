@@ -15,16 +15,18 @@ resource "aws_ecs_task_definition" "pass_windows_2022_core_with_custom_user" {
       operating_system_family = "WINDOWS_SERVER_2022_CORE"
       cpu_architecture = "X86_64"
     }]
-    container_definitions = [
-      {
-        name = "app-container"
-        image = "mcr.microsoft.com/windows/servercore:ltsc2022"
-        user = "customuser"
-        cpu = 256
-        memory = 512
-        essential = true
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2022",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "customuser"
+  }
+]
+EOT
   }
 }
 
@@ -37,15 +39,17 @@ resource "aws_ecs_task_definition" "fail_windows_2019_full_missing_user" {
       operating_system_family = "WINDOWS_SERVER_2019_FULL"
       cpu_architecture = "X86_64"
     }]
-    container_definitions = [
-      {
-        name = "app-container"
-        image = "mcr.microsoft.com/windows/servercore:ltsc2019"
-        cpu = 256
-        memory = 512
-        essential = true
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2019",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true
+  }
+]
+EOT
   }
 }
 
@@ -58,16 +62,18 @@ resource "aws_ecs_task_definition" "fail_windows_2022_full_with_admin_user" {
       operating_system_family = "WINDOWS_SERVER_2022_FULL"
       cpu_architecture = "X86_64"
     }]
-    container_definitions = [
-      {
-        name = "app-container"
-        image = "mcr.microsoft.com/windows/servercore:ltsc2022"
-        user = "containeradministrator"
-        cpu = 256
-        memory = 512
-        essential = true
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2022",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "containeradministrator"
+  }
+]
+EOT
   }
 }
 
@@ -80,23 +86,25 @@ resource "aws_ecs_task_definition" "fail_windows_2019_core_multiple_one_missing_
       operating_system_family = "WINDOWS_SERVER_2019_CORE"
       cpu_architecture = "X86_64"
     }]
-    container_definitions = [
-      {
-        name = "app-container"
-        image = "mcr.microsoft.com/windows/servercore:ltsc2019"
-        user = "appuser"
-        cpu = 256
-        memory = 512
-        essential = true
-      },
-      {
-        name = "sidecar-container"
-        image = "mcr.microsoft.com/windows/nanoserver:ltsc2019"
-        cpu = 128
-        memory = 256
-        essential = false
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2019",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "appuser"
+  },
+  {
+    "name": "sidecar-container",
+    "image": "mcr.microsoft.com/windows/nanoserver:ltsc2019",
+    "cpu": 128,
+    "memory": 256,
+    "essential": false
+  }
+]
+EOT
   }
 }
 
@@ -109,24 +117,26 @@ resource "aws_ecs_task_definition" "fail_windows_2022_core_multiple_one_admin" {
       operating_system_family = "WINDOWS_SERVER_2022_CORE"
       cpu_architecture = "X86_64"
     }]
-    container_definitions = [
-      {
-        name = "app-container"
-        image = "mcr.microsoft.com/windows/servercore:ltsc2022"
-        user = "appuser"
-        cpu = 256
-        memory = 512
-        essential = true
-      },
-      {
-        name = "admin-container"
-        image = "mcr.microsoft.com/windows/servercore:ltsc2022"
-        user = "containeradministrator"
-        cpu = 128
-        memory = 256
-        essential = false
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2022",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "appuser"
+  },
+  {
+    "name": "admin-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2022",
+    "cpu": 128,
+    "memory": 256,
+    "essential": false,
+    "user": "containeradministrator"
+  }
+]
+EOT
   }
 }
 
@@ -135,15 +145,17 @@ resource "aws_ecs_task_definition" "fail_no_runtime_platform_missing_user" {
   expect_failure = true
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name = "app-container"
-        image = "mcr.microsoft.com/windows/servercore:ltsc2022"
-        cpu = 256
-        memory = 512
-        essential = true
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2022",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true
+  }
+]
+EOT
   }
 }
 
@@ -155,23 +167,25 @@ resource "aws_ecs_task_definition" "pass_windows_2016_full_all_custom_users" {
       operating_system_family = "WINDOWS_SERVER_2016_FULL"
       cpu_architecture = "X86_64"
     }]
-    container_definitions = [
-      {
-        name = "app-container"
-        image = "mcr.microsoft.com/windows/servercore:ltsc2016"
-        user = "appuser"
-        cpu = 256
-        memory = 512
-        essential = true
-      },
-      {
-        name = "sidecar-container"
-        image = "mcr.microsoft.com/windows/nanoserver:sac2016"
-        user = "sidecaruser"
-        cpu = 128
-        memory = 256
-        essential = false
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2016",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "appuser"
+  },
+  {
+    "name": "sidecar-container",
+    "image": "mcr.microsoft.com/windows/nanoserver:sac2016",
+    "cpu": 128,
+    "memory": 256,
+    "essential": false,
+    "user": "sidecaruser"
+  }
+]
+EOT
   }
 }

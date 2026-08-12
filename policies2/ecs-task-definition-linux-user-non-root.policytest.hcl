@@ -10,16 +10,18 @@ policytest {
 resource "aws_ecs_task_definition" "pass_nonroot_uid" {
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "1000"
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "1000"
+  }
+]
+EOT
   }
 }
 
@@ -27,16 +29,18 @@ resource "aws_ecs_task_definition" "pass_nonroot_uid" {
 resource "aws_ecs_task_definition" "pass_nonroot_username" {
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "appuser"
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "appuser"
+  }
+]
+EOT
   }
 }
 
@@ -44,16 +48,18 @@ resource "aws_ecs_task_definition" "pass_nonroot_username" {
 resource "aws_ecs_task_definition" "pass_username_group" {
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "appuser:appgroup"
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "appuser:appgroup"
+  }
+]
+EOT
   }
 }
 
@@ -61,16 +67,18 @@ resource "aws_ecs_task_definition" "pass_username_group" {
 resource "aws_ecs_task_definition" "pass_uid_gid" {
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "1000:1000"
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "1000:1000"
+  }
+]
+EOT
   }
 }
 
@@ -78,24 +86,26 @@ resource "aws_ecs_task_definition" "pass_uid_gid" {
 resource "aws_ecs_task_definition" "pass_multiple_containers_compliant" {
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "appuser"
-      },
-      {
-        name      = "sidecar-container"
-        image     = "busybox:latest"
-        cpu       = 128
-        memory    = 256
-        essential = false
-        user      = "1000"
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "appuser"
+  },
+  {
+    "name": "sidecar-container",
+    "image": "busybox:latest",
+    "cpu": 128,
+    "memory": 256,
+    "essential": false,
+    "user": "1000"
+  }
+]
+EOT
   }
 }
 
@@ -104,15 +114,17 @@ resource "aws_ecs_task_definition" "fail_missing_user" {
   expect_failure = true
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true
+  }
+]
+EOT
   }
 }
 
@@ -121,16 +133,18 @@ resource "aws_ecs_task_definition" "fail_root_username" {
   expect_failure = true
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "root"
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "root"
+  }
+]
+EOT
   }
 }
 
@@ -139,16 +153,18 @@ resource "aws_ecs_task_definition" "fail_root_uid" {
   expect_failure = true
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "0"
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "0"
+  }
+]
+EOT
   }
 }
 
@@ -157,23 +173,25 @@ resource "aws_ecs_task_definition" "fail_multiple_one_missing_user" {
   expect_failure = true
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "appuser"
-      },
-      {
-        name      = "sidecar-container"
-        image     = "busybox:latest"
-        cpu       = 128
-        memory    = 256
-        essential = false
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "appuser"
+  },
+  {
+    "name": "sidecar-container",
+    "image": "busybox:latest",
+    "cpu": 128,
+    "memory": 256,
+    "essential": false
+  }
+]
+EOT
   }
 }
 
@@ -182,24 +200,26 @@ resource "aws_ecs_task_definition" "fail_multiple_one_root" {
   expect_failure = true
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-        user      = "appuser"
-      },
-      {
-        name      = "sidecar-container"
-        image     = "busybox:latest"
-        cpu       = 128
-        memory    = 256
-        essential = false
-        user      = "root"
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true,
+    "user": "appuser"
+  },
+  {
+    "name": "sidecar-container",
+    "image": "busybox:latest",
+    "cpu": 128,
+    "memory": 256,
+    "essential": false,
+    "user": "root"
+  }
+]
+EOT
   }
 }
 
@@ -213,15 +233,17 @@ resource "aws_ecs_task_definition" "filter_windows_excluded" {
         cpu_architecture        = "X86_64"
       }
     ]
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "mcr.microsoft.com/windows/servercore:ltsc2019"
-        cpu       = 256
-        memory    = 512
-        essential = true
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "mcr.microsoft.com/windows/servercore:ltsc2019",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true
+  }
+]
+EOT
   }
 }
 
@@ -230,14 +252,16 @@ resource "aws_ecs_task_definition" "filter_default_linux_evaluated" {
   expect_failure = true
   attrs = {
     family = "test-task"
-    container_definitions = [
-      {
-        name      = "app-container"
-        image     = "nginx:latest"
-        cpu       = 256
-        memory    = 512
-        essential = true
-      }
-    ]
+    container_definitions = <<EOT
+[
+  {
+    "name": "app-container",
+    "image": "nginx:latest",
+    "cpu": 256,
+    "memory": 512,
+    "essential": true
+  }
+]
+EOT
   }
 }

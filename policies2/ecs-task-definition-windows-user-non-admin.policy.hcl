@@ -44,7 +44,7 @@ resource_policy "aws_ecs_task_definition" "windows_non_admin_user" {
   locals {
     # container_definitions attribute - access directly as structured data
     # In tfpolicy, this attribute is already parsed, not a JSON string
-    containers = core::try(attrs.container_definitions, [])
+    containers = core::jsondecode(attrs.container_definitions)
     
     # Find containers without user parameter configured
     containers_without_user = [
