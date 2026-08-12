@@ -16,7 +16,7 @@ input "docdb-cluster-backup-retention-check-enforcement-level" {
   default = "advisory"
 }
 
-input "min_backup_retention_period" {
+input "docdb_min_backup_retention_period" {
     type = number
     default = 7
 }
@@ -24,7 +24,7 @@ input "min_backup_retention_period" {
 resource_policy "aws_docdb_cluster" "backup-retention-period" {
     enforcement_level = input.docdb-cluster-backup-retention-check-enforcement-level
     enforce {
-        condition = input.min_backup_retention_period >= 1 && input.min_backup_retention_period <= 35 && core::try(attrs.backup_retention_period, 1) >= input.min_backup_retention_period
+        condition = input.docdb_min_backup_retention_period >= 1 && input.docdb_min_backup_retention_period <= 35 && core::try(attrs.backup_retention_period, 1) >= input.docdb_min_backup_retention_period
         error_message = "The backup retention period for the DocumentDB cluster is less than the minimum required"
     }
 }

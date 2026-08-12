@@ -24,8 +24,7 @@ resource_policy "aws_instance" "ssm_managed_instance" {
     has_instance_profile = local.instance_profile_name != ""
     
     # Check for AWS Elastic Disaster Recovery tags (these should be excluded)
-    instance_tags_raw = core::try(attrs.tags, null)
-    instance_tags = local.instance_tags_raw != null ? local.instance_tags_raw : {}
+    instance_tags = core::try(attrs.tags, {})
     is_disaster_recovery = core::contains(
       core::keys(local.instance_tags),
       "AWSElasticDisasterRecoveryManaged"

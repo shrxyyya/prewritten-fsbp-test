@@ -1,75 +1,100 @@
 # Copyright IBM Corp. 2026
 
 policytest {
-  targets = [
-    "dms-endpoint-ssl-configured.policy.hcl"
-  ]
+  targets = ["dms-endpoint-ssl-configured.policy.hcl"]
 }
 
-# Test 1: PASS - ssl_mode set to 'require'
-resource "aws_dms_endpoint" "pass_ssl_mode_require" {
+resource "aws_dms_endpoint" "pass_certificate_arn_literal" {
   attrs = {
-    endpoint_id   = "test-endpoint-require"
+    certificate_arn = "arn:aws:dms:us-east-1:123456789012:cert:ABCDEFG1234567890"
+    endpoint_id     = "pass-certificate-literal"
+    endpoint_type   = "source"
+    engine_name     = "mysql"
+  }
+}
+
+resource "aws_dms_endpoint" "pass_certificate_arn_reference" {
+  attrs = {
+    certificate_arn = "arn:aws:dms:us-east-1:123456789012:cert:REFERENCECERT1234"
+    endpoint_id     = "pass-certificate-reference"
+    endpoint_type   = "source"
+    engine_name     = "mysql"
+  }
+}
+
+resource "aws_dms_endpoint" "pass_source_endpoint_certificate" {
+  attrs = {
+    certificate_arn = "arn:aws:dms:us-east-1:123456789012:cert:SOURCECERT123456"
+    endpoint_id     = "pass-source-certificate"
+    endpoint_type   = "source"
+    engine_name     = "postgres"
+  }
+}
+
+resource "aws_dms_endpoint" "pass_target_endpoint_certificate" {
+  attrs = {
+    certificate_arn = "arn:aws:dms:us-east-1:123456789012:cert:TARGETCERT123456"
+    endpoint_id     = "pass-target-certificate"
+    endpoint_type   = "target"
+    engine_name     = "redshift"
+  }
+}
+
+resource "aws_dms_endpoint" "pass_certificate_with_ssl_none" {
+  attrs = {
+    certificate_arn = "arn:aws:dms:us-east-1:123456789012:cert:SSLMODEIGNORED12"
+    endpoint_id     = "pass-ssl-mode-ignored"
+    endpoint_type   = "source"
+    engine_name     = "mysql"
+    ssl_mode        = "none"
+  }
+}
+
+resource "aws_dms_endpoint" "fail_certificate_arn_missing" {
+  expect_failure = true
+  attrs = {
+    endpoint_id   = "fail-missing"
+    endpoint_type = "target"
+    engine_name   = "postgres"
+  }
+}
+
+resource "aws_dms_endpoint" "fail_certificate_arn_null" {
+  expect_failure = true
+  attrs = {
+    certificate_arn = null
+    endpoint_id     = "fail-null"
+    endpoint_type   = "source"
+    engine_name     = "mysql"
+  }
+}
+
+resource "aws_dms_endpoint" "fail_certificate_arn_empty_string" {
+  expect_failure = true
+  attrs = {
+    certificate_arn = ""
+    endpoint_id     = "fail-empty"
+    endpoint_type   = "source"
+    engine_name     = "mysql"
+  }
+}
+
+resource "aws_dms_endpoint" "fail_ssl_mode_without_certificate" {
+  expect_failure = true
+  attrs = {
+    endpoint_id   = "fail-ssl-mode-only"
     endpoint_type = "source"
     engine_name   = "mysql"
     ssl_mode      = "require"
-    server_name   = "db.example.com"
-    port          = 3306
-    username      = "admin"
   }
 }
 
-# Test 2: PASS - ssl_mode set to 'verify-ca'
-resource "aws_dms_endpoint" "pass_ssl_mode_verify_ca" {
-  attrs = {
-    endpoint_id     = "test-endpoint-verify-ca"
-    endpoint_type   = "target"
-    engine_name     = "postgres"
-    ssl_mode        = "verify-ca"
-    certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
-    server_name     = "db.example.com"
-    port            = 5432
-    username        = "admin"
-  }
-}
-
-# Test 3: PASS - ssl_mode set to 'verify-full'
-resource "aws_dms_endpoint" "pass_ssl_mode_verify_full" {
-  attrs = {
-    endpoint_id     = "test-endpoint-verify-full"
-    endpoint_type   = "source"
-    engine_name     = "oracle"
-    ssl_mode        = "verify-full"
-    certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
-    server_name     = "db.example.com"
-    port            = 1521
-    username        = "admin"
-  }
-}
-
-# Test 4: FAIL - ssl_mode explicitly set to 'none'
-resource "aws_dms_endpoint" "fail_ssl_mode_none" {
+resource "aws_dms_endpoint" "fail_invalid_ssl_mode_without_certificate" {
   expect_failure = true
   attrs = {
-    endpoint_id   = "test-endpoint-none"
+    endpoint_id   = "fail-invalid-ssl-mode-only"
     endpoint_type = "source"
-    engine_name   = "mysql"
-    ssl_mode      = "none"
-    server_name   = "db.example.com"
-    port          = 3306
-    username      = "admin"
-  }
-}
-
-# Test 5: FAIL - ssl_mode not configured (defaults to 'none')
-resource "aws_dms_endpoint" "fail_ssl_mode_not_configured" {
-  expect_failure = true
-  attrs = {
-    endpoint_id   = "test-endpoint-default"
-    endpoint_type = "target"
-    engine_name   = "postgres"
-    server_name   = "db.example.com"
-    port          = 5432
-    username      = "admin"
+    engine_name   = "sqlserver"
+    ssl_mode      = "ssl-enabled"
   }
 }

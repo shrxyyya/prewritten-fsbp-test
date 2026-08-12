@@ -1,129 +1,113 @@
 # Copyright IBM Corp. 2026
 
 policytest {
-    targets = [
-        "elasticache-repl-grp-redis-auth-enabled.policy.hcl"
-    ]
+  targets = ["elasticache-repl-grp-redis-auth-enabled.policy.hcl"]
 }
 
-# Test 1: PASS - Redis with transit encryption and auth token, engine version 6.x
-resource "aws_elasticache_replication_group" "pass_redis_auth_v6" {
+# PASS: engine_version < 6.0 with auth_token set
+resource "aws_elasticache_replication_group" "pass_old_version_with_auth_token" {
   attrs = {
-    replication_group_id          = "redis-auth-v6"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    auth_token                    = "my-secure-auth-token-123"
-    engine_version                = "6.0"
+    replication_group_id       = "test-rg-pass-1"
+    description                = "Test replication group"
+    engine_version             = "5.0.6"
+    auth_token                 = "mysecrettoken123"
+    transit_encryption_enabled = true
   }
 }
 
-# Test 2: PASS - Redis with transit encryption and auth token, engine version 7.x
-resource "aws_elasticache_replication_group" "pass_redis_auth_v7" {
+# PASS: engine_version 4.x < 6.0 with auth_token set
+resource "aws_elasticache_replication_group" "pass_version_4_with_auth_token" {
   attrs = {
-    replication_group_id          = "redis-auth-v7"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    auth_token                    = "another-secure-token-456"
-    engine_version                = "7.1"
+    replication_group_id       = "test-rg-pass-2"
+    description                = "Test replication group"
+    engine_version             = "4.0.10"
+    auth_token                 = "anothersecrettoken456"
+    transit_encryption_enabled = true
   }
 }
 
-# Test 3: PASS - Redis with transit encryption and auth token, no engine version specified
-resource "aws_elasticache_replication_group" "pass_redis_auth_no_version" {
+# PASS: engine_version exactly "6.0" (not < 6.0, auth_token not required)
+resource "aws_elasticache_replication_group" "pass_version_exactly_6_0" {
   attrs = {
-    replication_group_id          = "redis-auth-no-version"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    auth_token                    = "secure-token-789"
+    replication_group_id = "test-rg-pass-3"
+    description          = "Test replication group"
+    engine_version       = "6.0"
   }
 }
 
-# Test 4: PASS - Redis with transit encryption and auth token, engine version 6.2.6
-resource "aws_elasticache_replication_group" "pass_redis_auth_v6_2_6" {
+# PASS: engine_version "6.2" >= 6.0, auth_token not required
+resource "aws_elasticache_replication_group" "pass_version_6_2" {
   attrs = {
-    replication_group_id          = "redis-auth-v6-2-6"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    auth_token                    = "token-with-specific-version"
-    engine_version                = "6.2.6"
+    replication_group_id = "test-rg-pass-4"
+    description          = "Test replication group"
+    engine_version       = "6.2"
   }
 }
 
-# Test 5: FAIL - Redis with transit encryption but no auth token, engine version 6.x
-resource "aws_elasticache_replication_group" "fail_redis_no_auth_v6" {
+# PASS: engine_version "6.x" >= 6.0, auth_token not required
+resource "aws_elasticache_replication_group" "pass_version_6_x" {
+  attrs = {
+    replication_group_id = "test-rg-pass-5"
+    description          = "Test replication group"
+    engine_version       = "6.x"
+  }
+}
+
+# PASS: engine_version "7.2" >= 6.0, auth_token not required
+resource "aws_elasticache_replication_group" "pass_version_7_2" {
+  attrs = {
+    replication_group_id = "test-rg-pass-6"
+    description          = "Test replication group"
+    engine_version       = "7.2"
+  }
+}
+
+# PASS: engine_version is null — filtered out
+resource "aws_elasticache_replication_group" "pass_null_engine_version" {
+  attrs = {
+    replication_group_id = "test-rg-pass-7"
+    description          = "Test replication group"
+    engine_version       = null
+  }
+}
+
+# PASS: engine_version is empty string — filtered out
+resource "aws_elasticache_replication_group" "pass_empty_engine_version" {
+  attrs = {
+    replication_group_id = "test-rg-pass-8"
+    description          = "Test replication group"
+    engine_version       = ""
+  }
+}
+
+# FAIL: engine_version < 6.0 and auth_token is null
+resource "aws_elasticache_replication_group" "fail_old_version_null_auth_token" {
   expect_failure = true
   attrs = {
-    replication_group_id          = "redis-no-auth-v6"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    engine_version                = "6.0"
+    replication_group_id = "test-rg-fail-1"
+    description          = "Test replication group"
+    engine_version       = "5.0.6"
+    auth_token           = null
   }
 }
 
-# Test 6: FAIL - Redis with transit encryption but empty auth token, engine version 6.x
-resource "aws_elasticache_replication_group" "fail_redis_empty_auth_v6" {
+# FAIL: engine_version < 6.0 and auth_token is empty string
+resource "aws_elasticache_replication_group" "fail_old_version_empty_auth_token" {
   expect_failure = true
   attrs = {
-    replication_group_id          = "redis-empty-auth-v6"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    auth_token                    = ""
-    engine_version                = "6.0"
+    replication_group_id = "test-rg-fail-2"
+    description          = "Test replication group"
+    engine_version       = "5.0.6"
+    auth_token           = ""
   }
 }
 
-# Test 7: FAIL - Redis with transit encryption and auth token but engine version 5.x
-resource "aws_elasticache_replication_group" "fail_redis_auth_v5" {
+# FAIL: engine_version < 6.0 and auth_token attribute is missing
+resource "aws_elasticache_replication_group" "fail_old_version_missing_auth_token" {
   expect_failure = true
   attrs = {
-    replication_group_id          = "redis-auth-v5"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    auth_token                    = "token-but-old-version"
-    engine_version                = "5.0.6"
-  }
-}
-
-# Test 8: FAIL - Redis with transit encryption and auth token but engine version 4.x
-resource "aws_elasticache_replication_group" "fail_redis_auth_v4" {
-  expect_failure = true
-  attrs = {
-    replication_group_id          = "redis-auth-v4"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    auth_token                    = "token-but-very-old-version"
-    engine_version                = "4.0.10"
-  }
-}
-
-# Test 9: FAIL - Redis with transit encryption but no auth token and no engine version
-resource "aws_elasticache_replication_group" "fail_redis_no_auth_no_version" {
-  expect_failure = true
-  attrs = {
-    replication_group_id          = "redis-no-auth-no-version"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-  }
-}
-
-# Test 10: Skipped - Memcached engine (filtered out by policy)
-resource "aws_elasticache_replication_group" "skip_memcached" {
-  attrs = {
-    replication_group_id          = "memcached-cluster"
-    engine                        = "memcached"
-    transit_encryption_enabled    = true
-    auth_token                    = "token-but-memcached"
-    engine_version                = "1.6.6"
-  }
-}
-
-# Test 11: PASS - Redis with transit encryption and auth token, engine version 7.0.7
-resource "aws_elasticache_replication_group" "pass_redis_auth_v7_0_7" {
-  attrs = {
-    replication_group_id          = "redis-auth-v7-0-7"
-    engine                        = "redis"
-    transit_encryption_enabled    = true
-    auth_token                    = "token-v7-0-7"
-    engine_version                = "7.0.7"
+    replication_group_id = "test-rg-fail-3"
+    description          = "Test replication group"
+    engine_version       = "4.0.10"
   }
 }

@@ -1,135 +1,152 @@
 # Copyright IBM Corp. 2026
 
 policytest {
-    targets = [
-        "eks-cluster-secrets-encrypted.policy.hcl"
-    ]
+  targets = ["eks-cluster-secrets-encrypted.policy.hcl"]
 }
 
-# Test 1: PASS - EKS cluster with proper encryption configuration
-resource "aws_eks_cluster" "pass_with_complete_encryption_config" {
+# PASS: Fully compliant cluster with valid KMS key_arn and resources containing "secrets"
+resource "aws_eks_cluster" "pass_fully_compliant" {
   attrs = {
-    name = "compliant-cluster"
-    role_arn = "arn:aws:iam::123456789012:role/eks-cluster-role"
-    encryption_config = [
-      {
-        provider = [
-          {
-            key_arn = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
-          }
-        ]
-        resources = ["secrets"]
-      }
-    ]
-    vpc_config = [
-      {
-        subnet_ids = ["subnet-12345", "subnet-67890"]
-      }
-    ]
+    name     = "test-cluster-pass"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
+    encryption_config = [{
+      provider = [{
+        key_arn = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      }]
+      resources = ["secrets"]
+    }]
   }
 }
 
-# Test 2: FAIL - EKS cluster without encryption_config block
-resource "aws_eks_cluster" "fail_without_encryption_config" {
+# FAIL: No encryption_config block at all
+resource "aws_eks_cluster" "fail_missing_encryption_config" {
   expect_failure = true
   attrs = {
-    name = "no-encryption-cluster"
-    role_arn = "arn:aws:iam::123456789012:role/eks-cluster-role"
-    vpc_config = [
-      {
-        subnet_ids = ["subnet-12345", "subnet-67890"]
-      }
-    ]
+    name     = "test-cluster-no-encryption"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
   }
 }
 
-# Test 3: FAIL - EKS cluster with encryption_config but no provider.key_arn
-resource "aws_eks_cluster" "fail_without_key_arn" {
+# FAIL: Empty encryption_config list
+resource "aws_eks_cluster" "fail_empty_encryption_config" {
   expect_failure = true
   attrs = {
-    name = "no-key-arn-cluster"
-    role_arn = "arn:aws:iam::123456789012:role/eks-cluster-role"
-    encryption_config = [
-      {
-        provider = []
-        resources = ["secrets"]
-      }
-    ]
-    vpc_config = [
-      {
-        subnet_ids = ["subnet-12345", "subnet-67890"]
-      }
-    ]
+    name     = "test-cluster-empty-encryption"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
+    encryption_config = []
   }
 }
 
-# Test 4: FAIL - EKS cluster with encryption_config but secrets not in resources list
-resource "aws_eks_cluster" "fail_secrets_not_in_resources" {
+# FAIL: encryption_config present but provider block is missing
+resource "aws_eks_cluster" "fail_missing_provider" {
   expect_failure = true
   attrs = {
-    name = "no-secrets-cluster"
-    role_arn = "arn:aws:iam::123456789012:role/eks-cluster-role"
-    encryption_config = [
-      {
-        provider = [
-          {
-            key_arn = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
-          }
-        ]
-        resources = ["other-resource"]
-      }
-    ]
-    vpc_config = [
-      {
-        subnet_ids = ["subnet-12345", "subnet-67890"]
-      }
-    ]
+    name     = "test-cluster-no-provider"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
+    encryption_config = [{
+      provider  = []
+      resources = ["secrets"]
+    }]
   }
 }
 
-# Test 5: FAIL - EKS cluster with encryption_config but empty resources list
-resource "aws_eks_cluster" "fail_empty_resources_list" {
+# FAIL: provider present but key_arn is empty string
+resource "aws_eks_cluster" "fail_empty_key_arn" {
   expect_failure = true
   attrs = {
-    name = "empty-resources-cluster"
-    role_arn = "arn:aws:iam::123456789012:role/eks-cluster-role"
-    encryption_config = [
-      {
-        provider = [
-          {
-            key_arn = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
-          }
-        ]
-        resources = []
-      }
-    ]
-    vpc_config = [
-      {
-        subnet_ids = ["subnet-12345", "subnet-67890"]
-      }
-    ]
+    name     = "test-cluster-empty-key-arn"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
+    encryption_config = [{
+      provider = [{
+        key_arn = ""
+      }]
+      resources = ["secrets"]
+    }]
   }
 }
 
-# Test 6: PASS - EKS cluster with multiple encrypted resources including secrets
-resource "aws_eks_cluster" "pass_with_multiple_encrypted_resources" {
+# FAIL: provider present but key_arn is null
+resource "aws_eks_cluster" "fail_null_key_arn" {
+  expect_failure = true
   attrs = {
-    name = "multiple-resources-cluster"
-    role_arn = "arn:aws:iam::123456789012:role/eks-cluster-role"
-    encryption_config = [
-      {
-        provider = [
-          {
-            key_arn = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
-          }
-        ]
-        resources = ["secrets", "other-resource"]
-      }
-    ]
-    vpc_config = [
-      {
-        subnet_ids = ["subnet-12345", "subnet-67890"]
-      }
-    ]
+    name     = "test-cluster-null-key-arn"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
+    encryption_config = [{
+      provider = [{
+        key_arn = null
+      }]
+      resources = ["secrets"]
+    }]
+  }
+}
+
+# FAIL: valid key_arn but resources list does not contain "secrets"
+resource "aws_eks_cluster" "fail_resources_no_secrets" {
+  expect_failure = true
+  attrs = {
+    name     = "test-cluster-no-secrets-resource"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
+    encryption_config = [{
+      provider = [{
+        key_arn = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      }]
+      resources = ["configmaps"]
+    }]
+  }
+}
+
+# FAIL: resources list is empty
+resource "aws_eks_cluster" "fail_empty_resources" {
+  expect_failure = true
+  attrs = {
+    name     = "test-cluster-empty-resources"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
+    encryption_config = [{
+      provider = [{
+        key_arn = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      }]
+      resources = []
+    }]
+  }
+}
+
+# PASS: resources list contains "secrets" along with other values
+resource "aws_eks_cluster" "pass_resources_includes_secrets" {
+  attrs = {
+    name     = "test-cluster-multi-resources"
+    role_arn = "arn:aws:iam::123456789012:role/eks-role"
+    vpc_config = [{
+      subnet_ids = ["subnet-12345678", "subnet-87654321"]
+    }]
+    encryption_config = [{
+      provider = [{
+        key_arn = "arn:aws:kms:us-east-1:123456789012:key/abcdef12-abcd-abcd-abcd-abcdef123456"
+      }]
+      resources = ["secrets", "configmaps"]
+    }]
   }
 }

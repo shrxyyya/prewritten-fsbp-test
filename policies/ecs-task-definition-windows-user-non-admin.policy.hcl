@@ -18,7 +18,7 @@ input "ecs-task-definition-windows-user-non-admin-enforcement-level" {
 
 resource_policy "aws_ecs_task_definition" "windows_non_admin_user" {
   enforcement_level = input.ecs-task-definition-windows-user-non-admin-enforcement-level
-  
+
   locals {
     os_family = core::try(attrs.runtime_platform[0].operating_system_family, "")
 
@@ -37,7 +37,7 @@ resource_policy "aws_ecs_task_definition" "windows_non_admin_user" {
     # Per spec: evaluate if Windows OR if operating_system_family not configured
     should_evaluate = local.is_windows || local.os_family == ""
   }
-
+  
   # Only evaluate Windows task definitions or those without OS family specified
   filter = local.should_evaluate
 

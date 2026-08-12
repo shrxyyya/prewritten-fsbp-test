@@ -32,13 +32,11 @@ resource_policy "aws_ssm_association" "association_compliance_check" {
         
         # Valid compliance severity values
         valid_severities = ["UNSPECIFIED", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
-        compliance_severity_value_raw = core::try(attrs.compliance_severity, null)
-        compliance_severity_value = local.compliance_severity_value_raw != null ? local.compliance_severity_value_raw : "UNSPECIFIED"
+        compliance_severity_value = core::try(attrs.compliance_severity, "UNSPECIFIED")
         is_valid_severity = core::contains(local.valid_severities, local.compliance_severity_value)
         
         # Check if sync_compliance is configured (recommended for automatic compliance updates)
-        sync_compliance_value_raw = core::try(attrs.sync_compliance, null)
-        sync_compliance_value = local.sync_compliance_value_raw != null ? local.sync_compliance_value_raw : ""
+        sync_compliance_value = core::try(attrs.sync_compliance, "")
         has_sync_compliance = local.sync_compliance_value != ""
         is_auto_sync = local.sync_compliance_value == "AUTO"
     }
