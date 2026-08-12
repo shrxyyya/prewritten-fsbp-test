@@ -115,9 +115,11 @@ resource_policy "aws_vpc_security_group_ingress_rule" "restrict_unrestricted_ing
   enforcement_level = input.vpc-sg-open-only-to-authorized-ports-enforcement-level
   # Match any broadly-public CIDR on either IP family, not only the literal
   # "0.0.0.0/0" / "::/0" strings (see public_ipv4_cidr_pattern above).
-  filter = (core::length(core::regexall(local.public_ipv4_cidr_pattern, core::try(attrs.cidr_ipv4, ""))) > 0) || (core::length(core::regexall(local.public_ipv6_cidr_pattern, core::try(attrs.cidr_ipv6, ""))) > 0)
+  filter = (core::length(core::regexall(local.public_ipv4_cidr_pattern, local.cidr_ipv4)) > 0) || (core::length(core::regexall(local.public_ipv6_cidr_pattern, local.cidr_ipv6)) > 0)
 
   locals {
+    cidr_ipv4 = core::try(attrs.cidr_ipv4, "") != null ? core::try(attrs.cidr_ipv4, "") : ""
+    cidr_ipv6 = core::try(attrs.cidr_ipv6, "") != null ? core::try(attrs.cidr_ipv6, "") : ""
     protocol  = core::try(attrs.ip_protocol, "")
     from_port = core::try(attrs.from_port, -1)
     to_port   = core::try(attrs.to_port, -1)
